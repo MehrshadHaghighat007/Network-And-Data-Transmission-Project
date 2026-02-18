@@ -1,0 +1,19 @@
+{
+  "inbounds": [
+    {
+      "tag": "reflex-test",
+      "protocol": "reflex",
+      "port": 12345,  
+      "listen": "0.0.0.0",
+      "settings": {
+        "clients": [
+          {"id": "user-uuid-1", "policy": "mimic-http2-api"}
+        ],
+        "fallback": {"dest": 80}
+      }
+    }
+  ],
+  "outbounds": [
+    {"protocol": "freedom"}
+  ]
+}

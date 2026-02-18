@@ -3,6 +3,7 @@ package conf
 import (
 	"strings"
 
+	"github.com/xtls/xray-core/infra/conf/proxy"
 	"github.com/sagernet/sing-shadowsocks/shadowaead_2022"
 	C "github.com/sagernet/sing/common"
 	"github.com/xtls/xray-core/common/errors"
@@ -267,4 +268,11 @@ func (v *ShadowsocksClientConfig) Build() (proto.Message, error) {
 	}
 
 	return config, nil
+
+func init() {
+	// ما از RegisterConfigCreator استفاده می‌کنیم که در این لایه شناخته شده است
+	RegisterConfigCreator("reflex", func() interface{} {
+		return new(proxy.ReflexInboundConfig)
+	})
+}
 }
