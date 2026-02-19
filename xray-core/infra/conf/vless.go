@@ -262,7 +262,7 @@ func (c *VLessOutboundConfig) Build() (proto.Message, error) {
 			if c.Address != nil {
 				account.Id = c.Id
 				account.Flow = c.Flow
-				//account.Seed = c.Seed
+				// account.Seed = c.Seed
 				account.Encryption = c.Encryption
 				account.Reverse = c.Reverse
 				account.Testpre = c.Testpre

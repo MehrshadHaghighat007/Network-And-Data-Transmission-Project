@@ -8,9 +8,7 @@ import (
 
 type ConfigCreator func() interface{}
 
-var (
-	globalTransportConfigCreatorCache = make(map[string]ConfigCreator)
-)
+var globalTransportConfigCreatorCache = make(map[string]ConfigCreator)
 
 var strategy = [][]byte{
 	//              name        strategy,   prefer, fallback
@@ -130,7 +128,7 @@ func (s DomainStrategy) FallbackIP6() bool {
 }
 
 func (s DomainStrategy) GetDynamicStrategy(addrFamily net.AddressFamily) DomainStrategy {
-	if  addrFamily.IsDomain(){
+	if addrFamily.IsDomain() {
 		return s
 	}
 	switch s {

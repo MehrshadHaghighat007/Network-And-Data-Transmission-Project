@@ -67,7 +67,7 @@ func (c *Commander) Start() error {
 	}
 	c.Unlock()
 
-	var listen = func(listener net.Listener) {
+	listen := func(listener net.Listener) {
 		if err := c.server.Serve(listener); err != nil {
 			errors.LogErrorInner(context.Background(), err, "failed to start grpc server")
 		}

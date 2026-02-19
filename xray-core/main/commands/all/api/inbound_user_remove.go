@@ -5,7 +5,6 @@ import (
 
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
 	cserial "github.com/xtls/xray-core/common/serial"
-
 	"github.com/xtls/xray-core/main/commands/base"
 )
 

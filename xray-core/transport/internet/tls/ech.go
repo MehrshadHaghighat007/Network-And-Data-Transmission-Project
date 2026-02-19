@@ -17,19 +17,18 @@ import (
 	"sync/atomic"
 	"time"
 
-	utls "github.com/refraction-networking/utls"
-	"github.com/xtls/xray-core/common/crypto"
-	dns2 "github.com/xtls/xray-core/features/dns"
-	"golang.org/x/net/http2"
-
 	"github.com/miekg/dns"
+	utls "github.com/refraction-networking/utls"
 	"github.com/xtls/reality"
 	"github.com/xtls/reality/hpke"
+	"github.com/xtls/xray-core/common/crypto"
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/common/utils"
+	dns2 "github.com/xtls/xray-core/features/dns"
 	"github.com/xtls/xray-core/transport/internet"
 	"golang.org/x/crypto/cryptobyte"
+	"golang.org/x/net/http2"
 )
 
 func ApplyECH(c *Config, config *tls.Config) error {
@@ -374,9 +373,7 @@ func ConvertToGoECHKeys(data []byte) ([]tls.EncryptedClientHelloKey, error) {
 			return keys, ErrInvalidLen
 		}
 		child := cryptobyte.String(s[:2+keyLength+2+configLength])
-		var (
-			sk, config cryptobyte.String
-		)
+		var sk, config cryptobyte.String
 		if !child.ReadUint16LengthPrefixed(&sk) || !child.ReadUint16LengthPrefixed(&config) || !child.Empty() {
 			return keys, ErrInvalidLen
 		}
@@ -391,9 +388,11 @@ func ConvertToGoECHKeys(data []byte) ([]tls.EncryptedClientHelloKey, error) {
 	return keys, nil
 }
 
-const ExtensionEncryptedClientHello = 0xfe0d
-const KDF_HKDF_SHA384 = 0x0002
-const KDF_HKDF_SHA512 = 0x0003
+const (
+	ExtensionEncryptedClientHello = 0xfe0d
+	KDF_HKDF_SHA384               = 0x0002
+	KDF_HKDF_SHA512               = 0x0003
+)
 
 func GenerateECHKeySet(configID uint8, domain string, kem uint16) (reality.EchConfig, []byte, error) {
 	config := reality.EchConfig{
@@ -417,7 +416,7 @@ func GenerateECHKeySet(configID uint8, domain string, kem uint16) (reality.EchCo
 	}
 	// if kem == hpke.DHKEM_X25519_HKDF_SHA256 {
 	curve := ecdh.X25519()
-	priv := make([]byte, 32) //x25519
+	priv := make([]byte, 32) // x25519
 	_, err := io.ReadFull(rand.Reader, priv)
 	if err != nil {
 		return config, nil, err

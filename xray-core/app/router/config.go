@@ -215,7 +215,6 @@ func getGeoIPList(ips []*GeoIP) ([]*GeoIP, error) {
 		}
 	}
 	return geoipList, nil
-
 }
 
 func getDomainList(domains []*Domain) ([]*Domain, error) {

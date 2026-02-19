@@ -4,21 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/xtls/xray-core/common/protocol"
-
 	handlerService "github.com/xtls/xray-core/app/proxyman/command"
+	"github.com/xtls/xray-core/common/protocol"
 	cserial "github.com/xtls/xray-core/common/serial"
-
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/infra/conf"
 	"github.com/xtls/xray-core/infra/conf/serial"
+	"github.com/xtls/xray-core/main/commands/base"
 	"github.com/xtls/xray-core/proxy/shadowsocks"
 	"github.com/xtls/xray-core/proxy/shadowsocks_2022"
 	"github.com/xtls/xray-core/proxy/trojan"
 	vlessin "github.com/xtls/xray-core/proxy/vless/inbound"
 	vmessin "github.com/xtls/xray-core/proxy/vmess/inbound"
-
-	"github.com/xtls/xray-core/main/commands/base"
 )
 
 var cmdAddInboundUsers = &base.Command{

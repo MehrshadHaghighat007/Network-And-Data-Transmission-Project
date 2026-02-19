@@ -432,7 +432,7 @@ type NoisePacketWriter struct {
 func (w *NoisePacketWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 	if w.firstWrite {
 		w.firstWrite = false
-		//Do not send Noise for dns requests(just to be safe)
+		// Do not send Noise for dns requests(just to be safe)
 		if w.UDPOverride.Port == 53 {
 			return w.Writer.WriteMultiBuffer(mb)
 		}
@@ -455,11 +455,11 @@ func (w *NoisePacketWriter) WriteMultiBuffer(mb buf.MultiBuffer) error {
 			default:
 				panic("unreachable, applyTo is ip/ipv4/ipv6")
 			}
-			//User input string or base64 encoded string or hex string
+			// User input string or base64 encoded string or hex string
 			if n.Packet != nil {
 				noise = n.Packet
 			} else {
-				//Random noise
+				// Random noise
 				noise, err = GenerateRandomBytes(crypto.RandBetween(int64(n.LengthMin),
 					int64(n.LengthMax)))
 			}

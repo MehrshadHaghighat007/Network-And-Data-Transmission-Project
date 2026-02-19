@@ -116,13 +116,13 @@ func (m *MuxConfig) Build() (*proxyman.MultiplexingConfig, error) {
 }
 
 type InboundDetourConfig struct {
-	Protocol       string                         `json:"protocol"`
-	PortList       *PortList                      `json:"port"`
-	ListenOn       *Address                       `json:"listen"`
-	Settings       *json.RawMessage               `json:"settings"`
-	Tag            string                         `json:"tag"`
-	StreamSetting  *StreamConfig                  `json:"streamSettings"`
-	SniffingConfig *SniffingConfig                `json:"sniffing"`
+	Protocol       string           `json:"protocol"`
+	PortList       *PortList        `json:"port"`
+	ListenOn       *Address         `json:"listen"`
+	Settings       *json.RawMessage `json:"settings"`
+	Tag            string           `json:"tag"`
+	StreamSetting  *StreamConfig    `json:"streamSettings"`
+	SniffingConfig *SniffingConfig  `json:"sniffing"`
 }
 
 // Build implements Buildable.
@@ -251,7 +251,7 @@ func (c *OutboundDetourConfig) Build() (*core.OutboundHandlerConfig, error) {
 
 	if c.SendThrough != nil {
 		address := ParseSendThough(c.SendThrough)
-		//Check if CIDR exists
+		// Check if CIDR exists
 		if strings.Contains(*c.SendThrough, "/") {
 			senderSettings.ViaCidr = strings.Split(*c.SendThrough, "/")[1]
 		} else {
@@ -430,7 +430,6 @@ func (c *Config) Override(o *Config, fn string) {
 				c.InboundConfigs = append(c.InboundConfigs, o.InboundConfigs[i])
 				errors.LogInfo(context.Background(), "[", fn, "] appended inbound with tag: ", o.InboundConfigs[i].Tag)
 			}
-
 		}
 	}
 

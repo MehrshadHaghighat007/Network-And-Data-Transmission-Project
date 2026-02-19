@@ -774,7 +774,7 @@ type HappyEyeballsConfig struct {
 }
 
 func (h *HappyEyeballsConfig) UnmarshalJSON(data []byte) error {
-	var innerHappyEyeballsConfig = struct {
+	innerHappyEyeballsConfig := struct {
 		PrioritizeIPv6   bool   `json:"prioritizeIPv6"`
 		TryDelayMs       uint64 `json:"tryDelayMs"`
 		Interleave       uint32 `json:"interleave"`
@@ -902,7 +902,7 @@ func (c *SocketConfig) Build() (*internet.SocketConfig, error) {
 		return nil, errors.New("unsupported address and port strategy: ", c.AddressPortStrategy)
 	}
 
-	var happyEyeballs = &internet.HappyEyeballsConfig{Interleave: 1, PrioritizeIpv6: false, TryDelayMs: 0, MaxConcurrentTry: 4}
+	happyEyeballs := &internet.HappyEyeballsConfig{Interleave: 1, PrioritizeIpv6: false, TryDelayMs: 0, MaxConcurrentTry: 4}
 	if c.HappyEyeballsSettings != nil {
 		happyEyeballs.PrioritizeIpv6 = c.HappyEyeballsSettings.PrioritizeIPv6
 		happyEyeballs.Interleave = c.HappyEyeballsSettings.Interleave

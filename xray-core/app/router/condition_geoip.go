@@ -9,7 +9,6 @@ import (
 
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/common/net"
-
 	"go4.org/netipx"
 )
 

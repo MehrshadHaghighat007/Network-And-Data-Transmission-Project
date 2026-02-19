@@ -88,7 +88,6 @@ func TestOutboundWithStatCounter(t *testing.T) {
 }
 
 func TestTagsCache(t *testing.T) {
-
 	test_duration := 10 * time.Second
 	threads_num := 50
 	delay := 10 * time.Millisecond

@@ -91,7 +91,7 @@ func New(ctx context.Context, config *Config) (*DNS, error) {
 	var clients []*Client
 	domainRuleCount := 0
 
-	var defaultTag = config.Tag
+	defaultTag := config.Tag
 	if len(config.Tag) == 0 {
 		defaultTag = generateRandomTag()
 	}
@@ -135,7 +135,7 @@ func New(ctx context.Context, config *Config) (*DNS, error) {
 			serveExpiredTTL = *ns.ServeExpiredTTL
 		}
 
-		var tag = defaultTag
+		tag := defaultTag
 		if len(ns.Tag) > 0 {
 			tag = ns.Tag
 		}

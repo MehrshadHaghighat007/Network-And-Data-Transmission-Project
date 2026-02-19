@@ -8,11 +8,10 @@ import (
 	"math/big"
 	"os"
 
-	"github.com/xtls/xray-core/common/dice"
-
 	"github.com/xtls/xray-core/app/proxyman"
 	"github.com/xtls/xray-core/common"
 	"github.com/xtls/xray-core/common/buf"
+	"github.com/xtls/xray-core/common/dice"
 	"github.com/xtls/xray-core/common/errors"
 	"github.com/xtls/xray-core/common/mux"
 	"github.com/xtls/xray-core/common/net"
@@ -348,7 +347,7 @@ func (h *Handler) SetOutboundGateway(ctx context.Context, ob *session.Outbound) 
 					errors.LogDebug(ctx, "use inbound source ip as sendthrough: ", inbound.Source.Address.String())
 				}
 			}
-		//case addr.Family().IsDomain():
+		// case addr.Family().IsDomain():
 		default:
 			ob.Gateway = addr
 
@@ -396,7 +395,6 @@ func (h *Handler) ProxySettings() *serial.TypedMessage {
 }
 
 func ParseRandomIP(addr net.Address, prefix string) net.Address {
-
 	_, ipnet, _ := net.ParseCIDR(addr.IP().String() + "/" + prefix)
 
 	ones, bits := ipnet.Mask.Size()

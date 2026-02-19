@@ -628,7 +628,8 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 
 	if err := dispatch.DispatchLink(ctx, request.Destination(), &transport.Link{
 		Reader: clientReader,
-		Writer: clientWriter},
+		Writer: clientWriter,
+	},
 	); err != nil {
 		return errors.New("failed to dispatch request").Base(err)
 	}
