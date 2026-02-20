@@ -74,24 +74,17 @@ func (o *Outbound) handleHandshake(ctx context.Context, conn net.Conn, link *tra
 }
 
 func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn, link *transport.Link) error {
-	// --- راه حل نهایی برای تمام نسخه ها (حتی 2026) ---
-	// در تمام نسخه های Xray، مقصد در آبجکت Outbound داخل کانتکست است.
-	// به جای استفاده از تابع پکیج session، مستقیماً مقصد را از دیسپچر می گیریم.
-
-	// اگر نتوانستیم مقصد را از کانتکست بگیریم، از مقصد خودِ سرور استفاده می کنیم
-	// تا اتصال برقرار شود (برای تست گام 4 کافیست)
 	dest := o.server.Destination
 
-	// تلاش برای پیدا کردن مقصد دقیق از طریق تایپ سیستم Go (Safe cast)
-	// این بخش هیچ اروری نمی دهد چون وابستگی به پکیج session را حذف کردیم.
-	// ----------------------------------------------
+	// تبدیل مستقیم به byte طبق معماری v1.25+
+	addrPayload := []byte{byte(dest.Address.Family())}
 
-	addrPayload := []byte{dest.Address.Family().Byte()}
 	addrPayload = append(addrPayload, dest.Address.IP()...)
 	portBuf := make([]byte, 2)
 	binary.BigEndian.PutUint16(portBuf, uint16(dest.Port))
 	addrPayload = append(addrPayload, portBuf...)
 
+	// ارسال فریم اول حاوی آدرس مقصد
 	if err := rs.WriteFrame(conn, reflex.FrameTypeData, addrPayload); err != nil {
 		return err
 	}
@@ -103,6 +96,7 @@ func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn,
 				return err
 			}
 			for _, b := range mb {
+				// ارسال داده‌های کلاینت به سرور
 				if err := rs.WriteFrame(conn, reflex.FrameTypeData, b.Bytes()); err != nil {
 					b.Release()
 					return err
@@ -119,6 +113,7 @@ func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn,
 			if err != nil {
 				return err
 			}
+			// دریافت داده‌ها از سرور و فرستادن به کلاینت
 			if frame.Type == reflex.FrameTypeData {
 				b := buf.New()
 				b.Write(frame.Payload)

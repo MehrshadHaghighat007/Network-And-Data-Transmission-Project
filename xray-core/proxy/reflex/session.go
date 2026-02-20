@@ -1,49 +1,46 @@
 package reflex
 
 import (
-	"crypto/aes"
 	"crypto/cipher"
 	"encoding/binary"
-	"errors"
 	"io"
-)
 
-const (
-	FrameTypeData  byte = 0x01
-	FrameTypeClose byte = 0x0F
+	"golang.org/x/crypto/chacha20poly1305"
 )
-
-type Frame struct {
-	Type    byte
-	Payload []byte
-}
 
 type Session struct {
-	encryptor cipher.AEAD
-	decryptor cipher.AEAD
+	aead       cipher.AEAD
+	readNonce  uint64
+	writeNonce uint64
 }
 
-func NewSession(key []byte) (*Session, error) {
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	aesgcm, err := cipher.NewGCM(block)
+func NewSession(sessionKey []byte) (*Session, error) {
+	aead, err := chacha20poly1305.New(sessionKey)
 	if err != nil {
 		return nil, err
 	}
 	return &Session{
-		encryptor: aesgcm,
-		decryptor: aesgcm,
+		aead:       aead,
+		readNonce:  0,
+		writeNonce: 0,
 	}, nil
 }
 
+func (s *Session) getNonce(counter uint64) []byte {
+	nonce := make([]byte, 12)
+	binary.BigEndian.PutUint64(nonce[4:], counter)
+	return nonce
+}
+
 func (s *Session) WriteFrame(w io.Writer, fType byte, payload []byte) error {
-	nonce := make([]byte, 12) // در نسخه نهایی باید رندوم باشد
-	ciphertext := s.encryptor.Seal(nil, nonce, payload, []byte{fType})
+	nonce := s.getNonce(s.writeNonce)
+	s.writeNonce++
+	ciphertext := s.aead.Seal(nil, nonce, payload, nil)
+
 	header := make([]byte, 3)
-	header[0] = fType
-	binary.BigEndian.PutUint16(header[1:], uint16(len(ciphertext)))
+	binary.BigEndian.PutUint16(header[0:2], uint16(len(ciphertext)))
+	header[2] = fType
+
 	if _, err := w.Write(header); err != nil {
 		return err
 	}
@@ -56,16 +53,19 @@ func (s *Session) ReadFrame(r io.Reader) (*Frame, error) {
 	if _, err := io.ReadFull(r, header); err != nil {
 		return nil, err
 	}
-	fType := header[0]
-	length := binary.BigEndian.Uint16(header[1:])
+	length := binary.BigEndian.Uint16(header[0:2])
+	fType := header[2]
+
 	ciphertext := make([]byte, length)
 	if _, err := io.ReadFull(r, ciphertext); err != nil {
 		return nil, err
 	}
-	nonce := make([]byte, 12)
-	payload, err := s.decryptor.Open(nil, nonce, ciphertext, []byte{fType})
+
+	nonce := s.getNonce(s.readNonce)
+	s.readNonce++
+	payload, err := s.aead.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return nil, errors.New("failed to decrypt")
+		return nil, err
 	}
 	return &Frame{Type: fType, Payload: payload}, nil
 }

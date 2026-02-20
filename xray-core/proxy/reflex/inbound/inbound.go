@@ -109,19 +109,6 @@ func (h *Handler) handleHandshake(ctx context.Context, reader *bufio.Reader, con
 }
 
 // تابع کمکی برای ارسال پاسخ فیک 403 جهت فریب سیستم‌های فیلترینگ
-func (h *Handler) sendSafeForbiddenResponse(conn stat.Connection) {
-	forbidden := "HTTP/1.1 403 Forbidden\r\n" +
-		"Server: nginx\r\n" +
-		"Content-Type: text/html\r\n" +
-		"Content-Length: 153\r\n" +
-		"Connection: close\r\n" +
-		"\r\n" +
-		"<html>\r\n<head><title>403 Forbidden</title></head>\r\n" +
-		"<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n" +
-		"<hr><center>nginx</center>\r\n</body>\r\n</html>"
-
-	conn.Write([]byte(forbidden))
-}
 
 func (h *Handler) handleSession(ctx context.Context, reader *bufio.Reader, conn stat.Connection, dispatcher routing.Dispatcher, rs *reflex.Session, dest net.Destination) error {
 	ctx = session.ContextWithInbound(ctx, &session.Inbound{Tag: "reflex-inbound"})
