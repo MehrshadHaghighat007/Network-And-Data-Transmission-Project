@@ -1,0 +1,65 @@
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": 443,
+      "protocol": "reflex",
+      "settings": {
+        "users": [
+          {
+            "id": "23386051-7f92-494b-9d66-a4c5148677c7",
+            "level": 0,
+            "email": "user@example.com"
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "none"
+      },
+      "tag": "reflex-inbound"
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "reflex",
+      "settings": {
+        "vnext": [
+          {
+            "address": "1.2.3.4",
+            "port": 443,
+            "users": [
+              {
+                "id": "23386051-7f92-494b-9d66-a4c5148677c7",
+                "security": "auto"
+              }
+            ]
+          }
+        ],
+        "profile": {
+          "type": "youtube",
+          "padding": true,
+          "timing": true
+        }
+      },
+      "tag": "reflex-outbound"
+    },
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules": [
+      {
+        "type": "field",
+        "outboundTag": "direct",
+        "domain": ["geosite:private"]
+      }
+    ]
+  }
+}
+
