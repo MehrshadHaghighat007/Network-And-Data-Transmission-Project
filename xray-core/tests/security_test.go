@@ -1,14 +1,16 @@
-package reflex
+package tests
 
 import (
 	"crypto/subtle"
 	"testing"
+
+	"github.com/xtls/xray-core/proxy/reflex"
 )
 
+// نام این تابع را نگه می‌داریم
 func TestWeakKeys(t *testing.T) {
-	// تست کلید با طول نامعتبر (باید ۳۲ بایت باشد)
 	shortKey := make([]byte, 16)
-	_, err := NewSession(shortKey)
+	_, err := reflex.NewSession(shortKey)
 	if err == nil {
 		t.Error("Security Risk: Session accepted a weak/short key!")
 	} else {
@@ -17,7 +19,6 @@ func TestWeakKeys(t *testing.T) {
 }
 
 func TestConstantTimeUUID(t *testing.T) {
-	// تست مقایسه امن UUID
 	uuid1 := []byte("12345678-1234-1234-1234-123456789012")
 	uuid2 := []byte("12345678-1234-1234-1234-123456789013")
 

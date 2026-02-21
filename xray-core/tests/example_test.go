@@ -1,16 +1,15 @@
-package reflex_test
+package tests // نام پکیج باید با بقیه فایل‌های این پوشه یکی باشد
 
 import (
 	"bytes"
 	"fmt"
 
-	"github.com/xtls/xray-core/proxy/reflex"
+	"github.com/xtls/xray-core/proxy/reflex" // ایمپورت پکیج اصلی
 )
 
 func ExampleNewSession() {
-	// کلید باید ۳۲ بایت باشد
+	// استفاده از پیشوند reflex. برای دسترسی به توابع
 	sessionKey := make([]byte, 32)
-
 	session, err := reflex.NewSession(sessionKey)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -27,11 +26,10 @@ func ExampleSession_WriteFrame() {
 	key := make([]byte, 32)
 	session, _ := reflex.NewSession(key)
 
-	// به جای net.Pipe از bytes.Buffer استفاده می‌کنیم تا تست قفل نکند
 	var buf bytes.Buffer
-
 	data := []byte("hello reflex")
-	// فریم نوع 1 (Data) را در بافر می‌نویسیم
+
+	// استفاده از reflex. برای دسترسی به ثابت FrameTypeData (یا عدد آن)
 	err := session.WriteFrame(&buf, 1, data)
 	if err != nil {
 		fmt.Println("Error:", err)
