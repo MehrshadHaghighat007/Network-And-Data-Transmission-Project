@@ -52,8 +52,8 @@ func (h *Handler) Process(ctx context.Context, network net.Network, conn stat.Co
 	}
 
 	if binary.BigEndian.Uint32(peeked) == ReflexMagic {
-		reader.Discard(4)
-		err := h.handleHandshake(ctx, reader, conn)
+ reader.Discard(4)	
+	err := h.handleHandshake(ctx, reader, conn)
 		if err != nil {
 			conn.Close() // اگر هندشیک شکست خورد ببند
 		}
@@ -90,8 +90,8 @@ func (h *Handler) handleHandshake(ctx context.Context, reader *bufio.Reader, con
 		return err
 	}
 
-	p := reflex.YouTubeProfile
-	rs.Profile = &p
+p := &reflex.YouTubeProfile
+	rs.Profile = p
 
 	frame, err := rs.ReadFrame(reader)
 	if err != nil {
@@ -140,7 +140,7 @@ func (h *Handler) handleSession(ctx context.Context, reader *bufio.Reader, conn 
 			switch frame.Type {
 			case reflex.FrameTypeData:
 				b := buf.New()
-				b.Write(frame.Payload)
+				_, _ = b.Write(frame.Payload)
 				if err := link.Writer.WriteMultiBuffer(buf.MultiBuffer{b}); err != nil {
 					return err
 				}
@@ -209,7 +209,16 @@ func (h *Handler) sendSafeForbiddenResponse(conn stat.Connection) {
 			"<hr><center>nginx</center>\r\n</body>\r\n</html>",
 		time.Now().Format(time.RFC1123),
 	)
-	conn.Write([]byte(forbidden))
+	_, _ = conn.Write([]byte(forbidden))
+
+
+
+
+
+
+
+
+	
 	conn.Close()
 }
 

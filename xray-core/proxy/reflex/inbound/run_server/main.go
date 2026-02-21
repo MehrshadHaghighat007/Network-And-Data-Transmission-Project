@@ -22,7 +22,7 @@ func main() {
 	// استخراج پورت سایت فیک
 	_, portStr, _ := net.SplitHostPort(fakeSite.Listener.Addr().String())
 	var port uint32
-	fmt.Sscanf(portStr, "%d", &port)
+_, _ = fmt.Sscanf(portStr, "%d", &port)
 
 	// ۲. تنظیم هندلر ریفلکس با Fallback به سایت فیک
 	handler := &inbound.Handler{}
@@ -39,7 +39,7 @@ func main() {
 		go func(c net.Conn) {
 			// تبدیل کانکشن به تایپ مورد نیاز Xray
 			statConn := c.(stat.Connection)
-			handler.Process(context.Background(), corenet.Network_TCP, statConn, nil)
+_ = handler.Process(context.Background(), corenet.Network_TCP, statConn, nil)
 		}(conn)
 	}
 }
