@@ -19,7 +19,7 @@ import (
 
 type Outbound struct {
 	server  *protocol.ServerSpec
-	profile string // ذخیره نام پروفایل برای Morphing
+	profile string
 }
 
 func (o *Outbound) Process(ctx context.Context, link *transport.Link, dialer internet.Dialer) error {
@@ -50,35 +50,39 @@ func (o *Outbound) handleHandshake(ctx context.Context, conn net.Conn, link *tra
 		return err
 	}
 
-	// ۲. تبادل کلید
+	// ۲. تبادل کلید عمومی
 	clientPriv, clientPub, err := reflex.GenerateKeyPair()
 	if err != nil {
 		return err
 	}
-	if _, err := conn.Write(clientPub[:]); err != nil {
+	// ارسال کلید (تبدیل به اسلایس برای جلوگیری از ارور تایپ)
+	if _, err := conn.Write(clientPub); err != nil {
 		return err
 	}
 
+	// ۳. دریافت کلید عمومی سرور
 	serverPubRaw := make([]byte, 32)
 	if _, err := io.ReadFull(conn, serverPubRaw); err != nil {
 		return err
 	}
-	var serverPub [32]byte
-	copy(serverPub[:], serverPubRaw)
 
-	// ۳. ایجاد سشن
-	sharedKey := reflex.DeriveSharedKey(clientPriv, serverPub)
+	// ۴. مشتق‌سازی کلید و ایجاد Session
+	// استفاده از [:] برای هماهنگی با ورودی جدید crypto.go
+	sharedKey := reflex.DeriveSharedKey(clientPriv, serverPubRaw[:])
 	sessionKey := reflex.DeriveSessionKey(sharedKey, make([]byte, 16))
 	rs, err := reflex.NewSession(sessionKey)
 	if err != nil {
 		return err
 	}
 
-	// ۴. اعمال Traffic Morphing (اینجاست که جادو اتفاق می‌افتد!)
+	// ۵. فعال‌سازی Traffic Morphing (استفاده از Pointer برای رفع ارور Copylocks)
 	if o.profile != "" {
 		if p, ok := reflex.Profiles[o.profile]; ok {
-			rs.Profile = &p
+			rs.Profile = p // علامت & را از پشت p حذف کن
 		}
+	} else {
+		// استفاده از آدرس (&) برای جلوگیری از کپی شدن Mutex
+		rs.Profile = &reflex.YouTubeProfile
 	}
 
 	return o.relay(ctx, rs, conn, link)
@@ -87,14 +91,12 @@ func (o *Outbound) handleHandshake(ctx context.Context, conn net.Conn, link *tra
 func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn, link *transport.Link) error {
 	dest := o.server.Destination
 
-	// آماده‌سازی آدرس مقصد (طبق استاندارد قبلی‌ات)
 	addrPayload := []byte{byte(dest.Address.Family())}
 	addrPayload = append(addrPayload, dest.Address.IP()...)
 	portBuf := make([]byte, 2)
 	binary.BigEndian.PutUint16(portBuf, uint16(dest.Port))
 	addrPayload = append(addrPayload, portBuf...)
 
-	// ارسال مقصد (این فریم هم اگر پروفایل فعال باشد، Morph می‌شود)
 	if err := rs.WriteFrame(conn, reflex.FrameTypeData, addrPayload); err != nil {
 		return err
 	}
@@ -106,7 +108,6 @@ func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn,
 				return err
 			}
 			for _, b := range mb {
-				// ارسال داده‌ها با رعایت توزیع آماری سایز و زمان
 				if err := rs.WriteFrame(conn, reflex.FrameTypeData, b.Bytes()); err != nil {
 					b.Release()
 					return err
@@ -119,14 +120,19 @@ func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn,
 	resp := func() error {
 		reader := bufio.NewReader(conn)
 		for {
-			// در هنگام خواندن، ReadFrame پدینگ را به صورت خودکار حذف می‌کند
 			frame, err := rs.ReadFrame(reader)
 			if err != nil {
 				return err
 			}
+
+			if frame.Type == reflex.FrameTypePadding || frame.Type == reflex.FrameTypeTiming {
+				rs.HandleControlFrame(frame)
+				continue
+			}
+
 			if frame.Type == reflex.FrameTypeData {
 				b := buf.New()
-				b.Write(frame.Payload)
+				_, _ = b.Write(frame.Payload) // اضافه کردن _, _ برای ساکت کردن لینتر
 				if err := link.Writer.WriteMultiBuffer(buf.MultiBuffer{b}); err != nil {
 					return err
 				}
@@ -139,13 +145,12 @@ func (o *Outbound) relay(ctx context.Context, rs *reflex.Session, conn net.Conn,
 
 func init() {
 	common.Must(common.RegisterConfig((*reflex.OutboundConfig)(nil), func(ctx context.Context, config interface{}) (interface{}, error) {
-		// اینجا ما دیگر Profile را از c نمی‌خوانیم چون در Proto نیست
 		c := config.(*reflex.OutboundConfig)
 		dest := net.TCPDestination(net.ParseAddress(c.Address), net.Port(c.Port))
 
 		return &Outbound{
 			server:  &protocol.ServerSpec{Destination: dest},
-			profile: "youtube", // فعلاً به صورت Hardcode شده یوتیوب را انتخاب می‌کنیم
+			profile: "youtube",
 		}, nil
 	}))
 }

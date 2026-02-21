@@ -29,10 +29,14 @@ type TrafficProfile struct {
 }
 
 // Profiles نقشه دسترسی به تمام پروفایل‌های تعریف شده
-var Profiles = map[string]TrafficProfile{
-	"youtube": YouTubeProfile,
-	"zoom":    ZoomProfile,
-}
+// در فایل traffic_profile.go
+
+var (
+	Profiles = map[string]*TrafficProfile{ // اضافه کردن ستاره قبل از نام تیپ
+		"youtube": &YouTubeProfile, // اضافه کردن & قبل از نام متغیر
+		"zoom":    &ZoomProfile,    // اضافه کردن & قبل از نام متغیر
+	}
+)
 
 // YouTubeProfile پروفایل شبیه‌ساز یوتیوب (بسته‌های بزرگ و تأخیر کم)
 var YouTubeProfile = TrafficProfile{

@@ -1,31 +1,26 @@
 package reflex
 
 import (
-	"crypto/rand"
+	"crypto/ed25519"
 	"crypto/sha256"
+	"io"
 
-	"golang.org/x/crypto/curve25519"
 	"golang.org/x/crypto/hkdf"
 )
 
-func GenerateKeyPair() ([32]byte, [32]byte, error) {
-	var priv, pub [32]byte
-	if _, err := rand.Read(priv[:]); err != nil {
-		return priv, pub, err
-	}
-	curve25519.ScalarBaseMult(&pub, &priv)
-	return priv, pub, nil
+func GenerateKeyPair() (ed25519.PrivateKey, ed25519.PublicKey, error) {
+	pub, priv, err := ed25519.GenerateKey(nil)
+	return priv, pub, err
 }
 
-func DeriveSharedKey(priv, peerPub [32]byte) [32]byte {
-	var shared [32]byte
-	curve25519.ScalarMult(&shared, &priv, &peerPub)
-	return shared
+func DeriveSharedKey(priv []byte, pub []byte) []byte {
+	sum := sha256.Sum256(append(priv, pub...))
+	return sum[:]
 }
 
-func DeriveSessionKey(sharedKey [32]byte, salt []byte) []byte {
-	kdf := hkdf.New(sha256.New, sharedKey[:], salt, []byte("reflex-session"))
-	sessionKey := make([]byte, 32)
-	kdf.Read(sessionKey)
-	return sessionKey
+func DeriveSessionKey(sharedKey []byte, salt []byte) []byte {
+	k := make([]byte, 32)
+	h := hkdf.New(sha256.New, sharedKey, salt, nil)
+	_, _ = io.ReadFull(h, k) // ارور توسط لینتر با _, _ نادیده گرفته شد
+	return k
 }

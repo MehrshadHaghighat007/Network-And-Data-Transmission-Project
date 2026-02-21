@@ -17,10 +17,11 @@ type ServerHandshake struct {
 
 // ثابت‌های فریم (فقط یک‌جا تعریف می‌شوند)
 const (
-	FrameTypeData    byte = 0x01
-	FrameTypePadding byte = 0x02
-	FrameTypeTiming  byte = 0x03
-	FrameTypeClose   byte = 0x0F
+	FrameTypeData      byte = 0x01
+	FrameTypePadding   byte = 0x02
+	FrameTypeTiming    byte = 0x03
+	FrameTypeClose     byte = 0x0F
+	FrameTypeHandshake byte = 0x02
 )
 
 // ساختار فریم
